@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin-panel/
+Disallow: /messages.html
+Disallow: /teacher-dashboard.html
+Disallow: /student-dashboard.html
+
+Sitemap: https://studify.com/sitemap.xml

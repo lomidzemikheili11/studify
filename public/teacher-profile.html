@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studify — Teacher Profile</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem("studifyTheme");if(t!=="light")document.documentElement.setAttribute("data-theme","dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Studify"><b>Studify</b></a>
+      <nav class="main-nav">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="teachers.html" class="active" data-i18n="nav_teachers">Teachers</a>
+        <a href="how-it-works.html" data-i18n="nav_how">How It Works</a>
+        <a href="blog.html">Blog</a>
+        <a href="about.html" data-i18n="nav_about">About Us</a>
+        <a href="contact.html" data-i18n="nav_contact">Contact</a>
+      </nav>
+      <div class="header-right">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Tema değiştir" title="Tema değiştir"></button>
+        <div class="lang-switcher" data-id="1"></div>
+        <div id="authArea">
+          <a href="login.html" class="btn btn-outline" data-i18n="login">Log In</a>
+          <a href="signup.html" class="btn btn-primary" data-i18n="signup">Sign Up</a>
+        </div>
+        <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <nav class="mobile-nav">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="teachers.html" data-i18n="nav_teachers">Teachers</a>
+      <div id="authAreaMobile"><a href="login.html" class="btn btn-outline btn-block" data-i18n="login">Giriş</a></div>
+    </nav>
+  </header>
+
+  <section class="section">
+    <div class="container" id="profileContainer">
+      <p style="text-align:center; color:var(--gray-500); padding:60px 0;">Loading...</p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container"><div class="footer-bottom" style="border-top:none; padding-top:0;"><span>🇹🇷</span> © 2026 Studify.</div></div>
+  </footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/script.js"></script>
+<script src="js/currency-timezone.js"></script>
+<script src="js/teacher-profile.js"></script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giriş Yap — Studify</title>
+<meta name="description" content="Studify hesabınıza giriş yapın.">
+<meta property="og:title" content="Giriş Yap — Studify">
+<meta property="og:description" content="Studify hesabınıza giriş yapın.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/images/logo.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" href="/images/logo.png">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem("studifyTheme");if(t!=="light")document.documentElement.setAttribute("data-theme","dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Studify"><b>Studify</b></a>
+      <nav class="main-nav">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="teachers.html" data-i18n="nav_teachers">Teachers</a>
+        <a href="how-it-works.html" data-i18n="nav_how">How It Works</a>
+        <a href="blog.html">Blog</a>
+        <a href="about.html" data-i18n="nav_about">About Us</a>
+        <a href="contact.html" data-i18n="nav_contact">Contact</a>
+      </nav>
+      <div class="header-right">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Tema değiştir" title="Tema değiştir"></button>
+        <div class="lang-switcher" data-id="1"></div>
+        <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <nav class="mobile-nav">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="teachers.html" data-i18n="nav_teachers">Teachers</a>
+    </nav>
+  </header>
+
+  <section class="auth-wrap">
+    <div class="auth-card">
+      <a href="index.html" class="logo"><img src="images/logo.png" style="width:34px;height:34px;"><b>Studify</b></a>
+      <h2 data-i18n="auth_login_title">Welcome back</h2>
+      <p class="sub" data-i18n="auth_login_sub">Enter your details</p>
+
+      <form id="loginForm">
+        <div class="form-group"><label data-i18n="auth_email">Email</label><input type="email" id="loginEmail" required></div>
+        <div class="form-group"><label data-i18n="auth_password">Password</label><input type="password" id="loginPassword" required></div>
+        <p class="error-box" id="loginError"></p>
+        <button type="submit" class="btn btn-primary btn-lg btn-block" data-i18n="auth_login_btn">Log In</button>
+      </form>
+
+      <p class="auth-foot"><span data-i18n="auth_no_account">No account?</span> <a href="signup.html" data-i18n="auth_signup_link">Sign up</a></p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container"><div class="footer-bottom" style="border-top:none; padding-top:0;"><span>🇹🇷</span> © 2026 Studify.</div></div>
+  </footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/script.js"></script>
+<script>
+  document.getElementById("loginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var errorBox = document.getElementById("loginError");
+    errorBox.style.display = "none";
+    var btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true;
+    try {
+      var data = await apiFetch("/auth/login", {
+        method: "POST",
+        body: { email: document.getElementById("loginEmail").value.trim(), password: document.getElementById("loginPassword").value }
+      });
+      setToken(data.token);
+      if (data.user.language) setCurrentLang(data.user.language);
+      window.location.href = data.user.role === "teacher" ? "teacher-dashboard.html" : (data.user.role === "admin" ? "index.html" : "student-dashboard.html");
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = "block";
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

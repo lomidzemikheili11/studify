@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — Admin Panel</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="adminShell"></div>
+<div id="adminPageContent" style="display:none;">
+  <div class="stat-grid" id="statGrid"><div class="stat-card"><div class="label">Yükleniyor...</div></div></div>
+  <div class="a-panel">
+    <div class="a-panel-head"><h3>Son öğretmen başvuruları</h3><a href="teachers.html" class="a-btn a-btn-outline a-btn-sm">Tümünü Gör</a></div>
+    <div id="recentTeachers"></div>
+  </div>
+  <div class="a-panel">
+    <div class="a-panel-head"><h3>Son mesajlar</h3><a href="messages.html" class="a-btn a-btn-outline a-btn-sm">Tümünü Gör</a></div>
+    <div id="recentMessages"></div>
+  </div>
+</div>
+
+<script src="admin-api.js"></script>
+<script>
+  function pill(status) {
+    var map = { pending: "Bekliyor", approved: "Onaylandı", rejected: "Reddedildi" };
+    return '<span class="a-pill a-pill-' + status + '">' + map[status] + '</span>';
+  }
+
+  async function loadDashboard() {
+    document.getElementById("adminPageTitle").textContent = "Dashboard";
+    try {
+      var stats = await adminFetch("/admin/stats");
+      document.getElementById("statGrid").innerHTML =
+        '<div class="stat-card accent-green"><div class="label">Onaylanmış öğretmen</div><div class="value">' + stats.teachers.approved + '</div><div class="sub">Toplam ' + stats.teachers.total + ' öğretmen</div></div>' +
+        '<div class="stat-card accent-warning"><div class="label">Onay bekleyen</div><div class="value">' + stats.teachers.pending + '</div><div class="sub">İnceleme gerekiyor</div></div>' +
+        '<div class="stat-card"><div class="label">Kullanıcılar</div><div class="value">' + stats.users.total + '</div><div class="sub">' + stats.users.students + ' öğrenci, ' + stats.users.teachers + ' öğretmen</div></div>' +
+        '<div class="stat-card accent-danger"><div class="label">Okunmamış mesaj</div><div class="value">' + stats.messages.unread + '</div><div class="sub">Toplam ' + stats.messages.total + ' mesaj</div></div>' +
+        '<div class="stat-card"><div class="label">Toplam değerlendirme</div><div class="value">' + stats.reviews.total + '</div><div class="sub">Tüm öğretmenler genelinde</div></div>' +
+        '<div class="stat-card accent-warning"><div class="label">Açık şikayet</div><div class="value">' + stats.complaints.open + '</div><div class="sub">Toplam ' + stats.complaints.total + ' şikayet</div></div>' +
+        '<div class="stat-card"><div class="label">Bloklu kullanıcı</div><div class="value">' + stats.users.blocked + '</div><div class="sub">Askıya alınmış hesaplar</div></div>';
+    } catch (err) { adminToast(err.message, true); }
+
+    try {
+      var teachersData = await adminFetch("/admin/teachers?status=all");
+      var recent = teachersData.teachers.slice(0, 5);
+      var box = document.getElementById("recentTeachers");
+      box.innerHTML = recent.length === 0 ? '<div class="a-empty">Henüz başvuru yok.</div>' :
+        '<table class="a-table"><thead><tr><th>Ad</th><th>Ders</th><th>Başvuru</th><th>Durum</th></tr></thead><tbody>' +
+        recent.map(function (t) { return '<tr><td>' + adminEscape(t.name) + '</td><td>' + adminEscape(t.subject) + '</td><td>' + adminTimeAgo(t.createdAt) + '</td><td>' + pill(t.status) + '</td></tr>'; }).join("") +
+        '</tbody></table>';
+    } catch (err) {}
+
+    try {
+      var messagesData = await adminFetch("/admin/messages");
+      var recentMsgs = messagesData.messages.slice(0, 5);
+      var mbox = document.getElementById("recentMessages");
+      mbox.innerHTML = recentMsgs.length === 0 ? '<div class="a-empty">Henüz mesaj yok.</div>' :
+        '<table class="a-table"><thead><tr><th>Gönderen</th><th>Tür</th><th>Konu</th><th>Tarih</th></tr></thead><tbody>' +
+        recentMsgs.map(function (m) {
+          var label = m.type === "teacher" ? '<span class="a-pill a-pill-teacher">Öğretmen</span>' : (m.type === "student" ? '<span class="a-pill a-pill-student">Öğrenci</span>' : '<span class="a-pill a-pill-student">Site</span>');
+          return '<tr><td>' + adminEscape(m.name) + (m.read ? '' : ' 🔴') + '</td><td>' + label + '</td><td>' + adminEscape(m.subject) + '</td><td>' + adminTimeAgo(m.createdAt) + '</td></tr>';
+        }).join("") + '</tbody></table>';
+    } catch (err) {}
+  }
+
+  initAdminShell("dashboard").then(function (user) { if (user) loadDashboard(); });
+</script>
+</body>
+</html>

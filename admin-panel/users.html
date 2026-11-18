@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kullanıcılar — Admin Panel</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="adminShell"></div>
+<div id="adminPageContent" style="display:none;">
+  <div class="a-panel">
+    <div class="a-tabs" id="roleTabs">
+      <div class="a-tab active" data-role="all">Hepsi</div>
+      <div class="a-tab" data-role="student">Öğrenciler</div>
+      <div class="a-tab" data-role="teacher">Öğretmenler</div>
+      <div class="a-tab" data-role="admin">Adminler</div>
+    </div>
+    <div id="usersTableBox" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<script src="admin-api.js"></script>
+<script>
+  var allUsers = [];
+  var currentRole = "all";
+
+  function rolePill(role) {
+    var map = { student: "Öğrenci", teacher: "Öğretmen", admin: "Admin" };
+    return '<span class="a-pill a-pill-' + role + '">' + map[role] + '</span>';
+  }
+  function statusPill(status) {
+    return status === "blocked" ? '<span class="a-pill a-pill-blocked">Bloklu</span>' : '<span class="a-pill a-pill-active">Aktif</span>';
+  }
+
+  function render() {
+    var box = document.getElementById("usersTableBox");
+    var filtered = currentRole === "all" ? allUsers : allUsers.filter(function (u) { return u.role === currentRole; });
+    if (filtered.length === 0) { box.innerHTML = '<div class="a-empty">Kullanıcı bulunamadı.</div>'; return; }
+    box.innerHTML =
+      '<table class="a-table"><thead><tr><th>Ad</th><th>E-posta</th><th>Telefon</th><th>Veli Tel.</th><th>Rol</th><th>Durum</th><th>Kayıt</th><th></th></tr></thead><tbody>' +
+      filtered.map(function (u) {
+        var actions = "";
+        if (u.role !== "admin") {
+          actions += u.status === "blocked"
+            ? '<button class="a-btn a-btn-outline a-btn-sm" data-unblock="' + u.id + '">Blok Kaldır</button>'
+            : '<button class="a-btn a-btn-danger a-btn-sm" data-block="' + u.id + '">Blokla</button>';
+          actions += ' <button class="a-btn a-btn-outline a-btn-sm" data-impersonate="' + u.id + '" data-role="' + u.role + '">Hesabına Gir</button>';
+          actions += ' <button class="a-btn a-btn-outline a-btn-sm" data-compose="' + u.id + '" data-name="' + adminEscape(u.name) + '">Mesaj Yaz</button>';
+          actions += ' <button class="a-btn a-btn-danger a-btn-sm" data-delete="' + u.id + '">Sil</button>';
+        }
+        return '<tr><td>' + adminEscape(u.name) + '</td><td>' + adminEscape(u.email) + '</td><td>' + adminEscape(u.phone || "—") + '</td><td>' + adminEscape(u.parentPhone || "—") + '</td><td>' + rolePill(u.role) + '</td><td>' + statusPill(u.status) + '</td><td>' + new Date(u.createdAt).toLocaleDateString("tr-TR") + '</td><td><div class="a-actions">' + actions + '</div></td></tr>';
+      }).join("") + '</tbody></table>';
+
+    box.querySelectorAll("[data-block]").forEach(function (btn) { btn.addEventListener("click", function () { blockUser(btn.getAttribute("data-block")); }); });
+    box.querySelectorAll("[data-unblock]").forEach(function (btn) { btn.addEventListener("click", function () { unblockUser(btn.getAttribute("data-unblock")); }); });
+    box.querySelectorAll("[data-delete]").forEach(function (btn) { btn.addEventListener("click", function () { deleteUser(btn.getAttribute("data-delete")); }); });
+    box.querySelectorAll("[data-impersonate]").forEach(function (btn) { btn.addEventListener("click", function () { impersonateUser(btn.getAttribute("data-impersonate"), btn.getAttribute("data-role")); }); });
+    box.querySelectorAll("[data-compose]").forEach(function (btn) { btn.addEventListener("click", function () { adminOpenComposeModal(btn.getAttribute("data-compose"), btn.getAttribute("data-name")); }); });
+  }
+
+  async function loadUsers() {
+    document.getElementById("adminPageTitle").textContent = "Kullanıcılar";
+    var box = document.getElementById("usersTableBox");
+    box.innerHTML = '<div class="a-empty">Yükleniyor...</div>';
+    try {
+      var data = await adminFetch("/admin/users");
+      allUsers = data.users.sort(function (a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+      render();
+    } catch (err) { box.innerHTML = '<div class="a-empty">Hata: ' + err.message + '</div>'; }
+  }
+
+  async function blockUser(id) {
+    if (!confirm("Bu kullanıcıyı bloklamak istediğinize emin misiniz?")) return;
+    try { await adminFetch("/admin/users/" + id + "/block", { method: "PUT" }); adminToast("Kullanıcı bloklandı."); loadUsers(); }
+    catch (err) { adminToast(err.message, true); }
+  }
+  async function unblockUser(id) {
+    try { await adminFetch("/admin/users/" + id + "/unblock", { method: "PUT" }); adminToast("Blok kaldırıldı."); loadUsers(); }
+    catch (err) { adminToast(err.message, true); }
+  }
+  async function deleteUser(id) {
+    if (!confirm("Bu kullanıcıyı kalıcı olarak silmek istediğinize emin misiniz?")) return;
+    try { await adminFetch("/admin/users/" + id, { method: "DELETE" }); adminToast("Kullanıcı silindi."); loadUsers(); }
+    catch (err) { adminToast(err.message, true); }
+  }
+  async function impersonateUser(id, role) {
+    if (!confirm("Bu kullanıcının hesabına girmek istediğinize emin misiniz? Bu işlem kayıt altına alınır.")) return;
+    try {
+      var res = await adminFetch("/admin/users/" + id + "/impersonate", { method: "POST" });
+      localStorage.setItem("studifyToken", res.token);
+      window.open(role === "teacher" ? "/teacher-dashboard.html" : "/student-dashboard.html", "_blank");
+      adminToast("Hesaba giriş yapıldı, yeni sekmede açıldı.");
+    } catch (err) { adminToast(err.message, true); }
+  }
+
+  document.getElementById("roleTabs").addEventListener("click", function (e) {
+    var tab = e.target.closest(".a-tab"); if (!tab) return;
+    document.querySelectorAll("#roleTabs .a-tab").forEach(function (t) { t.classList.remove("active"); });
+    tab.classList.add("active"); currentRole = tab.getAttribute("data-role"); render();
+  });
+
+  initAdminShell("users").then(function (user) { if (user) loadUsers(); });
+</script>
+</body>
+</html>

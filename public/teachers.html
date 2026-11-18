@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Öğretmenler — Studify</title>
+<meta name="description" content="Ülke, şehir, ders ve dile göre filtreleyerek size en uygun öğretmeni bulun.">
+<meta property="og:title" content="Öğretmenler — Studify">
+<meta property="og:description" content="Ülke, şehir, ders ve dile göre filtreleyerek size en uygun öğretmeni bulun.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/images/logo.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" href="/images/logo.png">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem("studifyTheme");if(t!=="light")document.documentElement.setAttribute("data-theme","dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+</head>
+<body>
+
+  <div class="trust-bar"><div class="container"><span>🛡️ <span data-i18n="hero_badge">Trusted worldwide</span></span></div></div>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Studify"><b>Studify</b></a>
+      <nav class="main-nav">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="teachers.html" class="active" data-i18n="nav_teachers">Teachers</a>
+        <a href="how-it-works.html" data-i18n="nav_how">How It Works</a>
+        <a href="blog.html">Blog</a>
+        <a href="about.html" data-i18n="nav_about">About Us</a>
+        <a href="contact.html" data-i18n="nav_contact">Contact</a>
+      </nav>
+      <div class="header-right">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Tema değiştir" title="Tema değiştir"></button>
+        <div class="lang-switcher" data-id="1"></div>
+        <div id="authArea">
+          <a href="login.html" class="btn btn-outline" data-i18n="login">Log In</a>
+          <a href="signup.html" class="btn btn-primary" data-i18n="signup">Sign Up</a>
+        </div>
+        <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <nav class="mobile-nav">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="teachers.html" class="active" data-i18n="nav_teachers">Teachers</a>
+      <a href="how-it-works.html" data-i18n="nav_how">How It Works</a>
+        <a href="blog.html">Blog</a>
+      <a href="about.html" data-i18n="nav_about">About Us</a>
+      <a href="contact.html" data-i18n="nav_contact">Contact</a>
+      <div id="authAreaMobile"><a href="login.html" class="btn btn-outline btn-block" data-i18n="login">Giriş</a></div>
+    </nav>
+  </header>
+
+  <section style="padding-top:28px;">
+    <div class="container">
+      <form class="search-bar" id="filterForm" style="margin:0 auto 30px; position:static;">
+        <div class="field"><label data-i18n="search_country"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg> Country</label><select name="country" id="fCountry"></select></div>
+        <div class="field"><label data-i18n="search_city"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> City</label><input type="text" name="city" id="fCity"></div>
+        <div class="field"><label data-i18n="search_nationality"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg> Nationality</label><select name="nationality" id="fNationality"></select></div>
+        <div class="field"><label data-i18n="search_subject"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg> Subject</label><select name="subject" id="fSubject"></select></div>
+        <div class="field">
+          <label data-i18n="search_mode"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/></svg> Lesson Type</label>
+          <select name="mode" id="fMode">
+            <option value="" data-i18n="search_all">All</option>
+            <option value="online" data-i18n="search_online">Online</option>
+            <option value="offline" data-i18n="search_offline">In Person</option>
+          </select>
+        </div>
+        <div class="field"><label data-i18n="search_lang"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg> Language</label><select name="lang" id="fLang"></select></div>
+        <button type="submit" class="btn btn-primary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> <span data-i18n="btn_search">Search</span></button>
+      </form>
+    </div>
+  </section>
+
+  <section style="padding-bottom:56px;">
+    <div class="container">
+      <div class="section-head">
+        <h2 data-i18n="section_teachers">Teachers</h2>
+        <span class="badge-count" id="badgeCount">0</span>
+      </div>
+      <div class="teacher-grid" id="teacherGrid"></div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-bottom"><span>🇹🇷</span> © 2026 Studify. <span data-i18n="footer_rights">All rights reserved.</span></div>
+    </div>
+  </footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/countries.js"></script>
+<script src="js/script.js"></script>
+<script src="js/currency-timezone.js"></script>
+<script src="js/home.js"></script>
+<script src="js/teachers.js"></script>
+</body>
+</html>

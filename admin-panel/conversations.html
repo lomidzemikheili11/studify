@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tüm Yazışmalar — Admin Panel</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+<style>
+  .conv-shell { display: grid; grid-template-columns: 280px 1fr; height: calc(100vh - 62px - 56px); border: 1px solid var(--a-border); border-radius: 10px; overflow: hidden; }
+  .conv-list { border-right: 1px solid var(--a-border); overflow-y: auto; background: var(--a-sidebar); }
+  .conv-list-item { padding: 12px 16px; border-bottom: 1px solid var(--a-border); cursor: pointer; }
+  .conv-list-item:hover, .conv-list-item.active { background: var(--a-sidebar-hover); }
+  .conv-list-item .pair { font-size: 12.5px; font-weight: 700; }
+  .conv-list-item .preview { font-size: 11px; color: var(--a-text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
+  .conv-thread { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+  .conv-bubble { max-width: 65%; padding: 10px 14px; border-radius: 12px; font-size: 13px; }
+  .conv-bubble .who { font-size: 10.5px; color: var(--a-text-dim); margin-bottom: 3px; }
+</style>
+</head>
+<body>
+<div id="adminShell"></div>
+<div id="adminPageContent" style="display:none;">
+  <p style="font-size:12.5px; color:var(--a-text-dim); margin-bottom:14px;">Öğrenci ve öğretmenler arasındaki tüm özel yazışmaları buradan görüntüleyebilirsiniz.</p>
+  <div class="conv-shell">
+    <div class="conv-list" id="convList"><div class="a-empty">Yükleniyor...</div></div>
+    <div class="conv-thread" id="convThread"><div class="a-empty">Görüntülemek için bir yazışma seçin.</div></div>
+  </div>
+</div>
+
+<script src="admin-api.js"></script>
+<script>
+  var allConvs = [];
+  var activeConvId = null;
+
+  function timeShort(iso) { return new Date(iso).toLocaleString("tr-TR"); }
+
+  function renderList() {
+    var box = document.getElementById("convList");
+    if (allConvs.length === 0) { box.innerHTML = '<div class="a-empty">Henüz yazışma yok.</div>'; return; }
+    box.innerHTML = allConvs.map(function (c) {
+      return '<div class="conv-list-item' + (c.conversationId === activeConvId ? ' active' : '') + '" data-id="' + c.conversationId + '">' +
+        '<div class="pair">' + adminEscape(c.participantAName) + ' ↔ ' + adminEscape(c.participantBName) + '</div>' +
+        '<div class="preview">' + adminEscape(c.lastMessage) + '</div>' +
+        '<div class="preview">' + timeShort(c.lastMessageAt) + ' · ' + c.messageCount + ' mesaj</div>' +
+      '</div>';
+    }).join("");
+    box.querySelectorAll("[data-id]").forEach(function (el) {
+      el.addEventListener("click", function () { openThread(el.getAttribute("data-id")); });
+    });
+  }
+
+  async function loadConversations() {
+    document.getElementById("adminPageTitle").textContent = "Tüm Yazışmalar";
+    try {
+      var data = await adminFetch("/admin/conversations");
+      allConvs = data.conversations;
+      renderList();
+    } catch (err) {
+      document.getElementById("convList").innerHTML = '<div class="a-empty">Hata: ' + err.message + '</div>';
+    }
+  }
+
+  async function openThread(convId) {
+    activeConvId = convId;
+    renderList();
+    var box = document.getElementById("convThread");
+    box.innerHTML = '<div class="a-empty">Yükleniyor...</div>';
+    try {
+      var data = await adminFetch("/admin/conversations/" + convId);
+      box.innerHTML = data.messages.map(function (m) {
+        return '<div class="conv-bubble" style="background:var(--a-card); align-self:flex-start;"><div class="who">' + adminEscape(m.senderName) + ' · ' + timeShort(m.createdAt) + '</div>' + adminEscape(m.message) + '</div>';
+      }).join("");
+    } catch (err) {
+      box.innerHTML = '<div class="a-empty">Hata: ' + err.message + '</div>';
+    }
+  }
+
+  initAdminShell("conversations").then(function (user) { if (user) loadConversations(); });
+</script>
+</body>
+</html>

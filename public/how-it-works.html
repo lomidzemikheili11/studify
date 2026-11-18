@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nasıl Çalışır? — Studify</title>
+<meta name="description" content="Studify üzerinden nasıl öğretmen bulacağınızı ve derse başlayacağınızı öğrenin.">
+<meta property="og:title" content="Nasıl Çalışır? — Studify">
+<meta property="og:description" content="Studify üzerinden nasıl öğretmen bulacağınızı ve derse başlayacağınızı öğrenin.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/images/logo.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" href="/images/logo.png">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem("studifyTheme");if(t!=="light")document.documentElement.setAttribute("data-theme","dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<style>
+  .steps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+  .step-card { background: var(--surface); border: 1px solid var(--gray-200); border-radius: 14px; padding: 26px 22px; text-align: center; box-shadow: var(--shadow-sm); }
+  .step-num { width: 42px; height: 42px; border-radius: 50%; background: var(--blue-pale); color: var(--blue); font-weight: 700; font-size: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+  @media (max-width: 900px) { .steps-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Studify"><b>Studify</b></a>
+      <nav class="main-nav">
+        <a href="index.html" data-i18n="nav_home">Ana Sayfa</a>
+        <a href="teachers.html" data-i18n="nav_teachers">Öğretmenler</a>
+        <a href="how-it-works.html" class="active" data-i18n="nav_how">Nasıl Çalışır?</a>
+        <a href="about.html" data-i18n="nav_about">Hakkımızda</a>
+        <a href="contact.html" data-i18n="nav_contact">İletişim</a>
+      </nav>
+      <div class="header-right">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Tema değiştir" title="Tema değiştir"></button>
+        <div class="lang-switcher" data-id="1"></div>
+        <div id="authArea">
+          <a href="login.html" class="btn btn-outline" data-i18n="login">Giriş</a>
+          <a href="signup.html" class="btn btn-primary" data-i18n="signup">Kayıt Ol</a>
+        </div>
+        <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <nav class="mobile-nav">
+      <a href="index.html" data-i18n="nav_home">Ana Sayfa</a>
+      <a href="teachers.html" data-i18n="nav_teachers">Öğretmenler</a>
+      <div id="authAreaMobile"><a href="login.html" class="btn btn-outline btn-block" data-i18n="login">Giriş</a></div>
+    </nav>
+  </header>
+
+  <section class="page-hero">
+    <div class="container">
+      <h1 data-i18n="nav_how">Nasıl Çalışır?</h1>
+      <p>Üç basit adımda size uygun öğretmeni bulun ve derse başlayın.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h4 style="color:var(--navy); margin:0 0 8px;">Arama yapın</h4>
+          <p style="font-size:13.5px; color:var(--gray-700); line-height:1.7;">Ülke, şehir, ders konusu ve dile göre filtreleyerek size uygun öğretmenleri bulun.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h4 style="color:var(--navy); margin:0 0 8px;">Profili inceleyin</h4>
+          <p style="font-size:13.5px; color:var(--gray-700); line-height:1.7;">Öğretmenin deneyimini, değerlendirmelerini ve fiyatını inceleyip size uygun olanı seçin.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h4 style="color:var(--navy); margin:0 0 8px;">İletişime geçin</h4>
+          <p style="font-size:13.5px; color:var(--gray-700); line-height:1.7;">Site içi mesajlaşma üzerinden öğretmenle doğrudan iletişime geçin ve ders saatinizi ayarlayın.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="feature-strip">
+    <div class="container">
+      <div><div class="stat-value">🛡️</div><div class="stat-label">Kimlik doğrulaması</div></div>
+      <div><div class="stat-value">🌍</div><div class="stat-label">150+ ülke</div></div>
+      <div><div class="stat-value">💬</div><div class="stat-label">Site içi mesajlaşma</div></div>
+      <div><div class="stat-value">⭐</div><div class="stat-label">Gerçek değerlendirmeler</div></div>
+    </div>
+  </section>
+
+  <footer class="site-footer"><div class="container"><div class="footer-bottom" style="border-top:none; padding-top:0;"><span>🇹🇷</span> © 2026 Studify.</div></div></footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/script.js"></script>
+</body>
+</html>

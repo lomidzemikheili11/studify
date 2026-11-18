@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Şikayetler — Admin Panel</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="adminShell"></div>
+<div id="adminPageContent" style="display:none;">
+  <div class="a-panel">
+    <div class="a-panel-head"><h3>Öğrenci şikayetleri</h3></div>
+    <div id="complaintsBox" style="padding:16px 20px;"></div>
+  </div>
+</div>
+
+<script src="admin-api.js"></script>
+<script>
+  async function loadComplaints() {
+    document.getElementById("adminPageTitle").textContent = "Şikayetler";
+    var box = document.getElementById("complaintsBox");
+    box.innerHTML = '<div class="a-empty">Yükleniyor...</div>';
+    try {
+      var data = await adminFetch("/admin/complaints");
+      if (data.complaints.length === 0) { box.innerHTML = '<div class="a-empty">Henüz şikayet yok.</div>'; return; }
+      box.innerHTML = data.complaints.map(function (c) {
+        var statusPill = c.status === "resolved" ? '<span class="a-pill a-pill-resolved">Çözüldü</span>' : '<span class="a-pill a-pill-open">Açık</span>';
+        return '<div class="a-msg-bubble">' +
+          '<div class="meta"><b style="color:var(--a-text);">' + adminEscape(c.studentName) + '</b> → ' + adminEscape(c.teacherName) + ' &middot; ' + adminEscape(c.reason) + ' &middot; ' + adminTimeAgo(c.createdAt) + ' &middot; ' + statusPill + '</div>' +
+          '<div>' + adminEscape(c.explanation) + '</div>' +
+          (c.status !== "resolved" ? '<button class="a-btn a-btn-primary a-btn-sm" style="margin-top:10px;" data-resolve="' + c.id + '">Çözüldü Olarak İşaretle</button>' : '') +
+        '</div>';
+      }).join("");
+      box.querySelectorAll("[data-resolve]").forEach(function (btn) {
+        btn.addEventListener("click", async function () {
+          try { await adminFetch("/admin/complaints/" + btn.getAttribute("data-resolve") + "/resolve", { method: "PUT" }); adminToast("Şikayet çözüldü olarak işaretlendi."); loadComplaints(); }
+          catch (err) { adminToast(err.message, true); }
+        });
+      });
+    } catch (err) { box.innerHTML = '<div class="a-empty">Hata: ' + err.message + '</div>'; }
+  }
+  initAdminShell("complaints").then(function (user) { if (user) loadComplaints(); });
+</script>
+</body>
+</html>

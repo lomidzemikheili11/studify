@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studify — Panelim</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem("studifyTheme");if(t!=="light")document.documentElement.setAttribute("data-theme","dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<style>
+  .dash-wrap { max-width: 760px; margin: 0 auto; padding: 36px 24px 70px; }
+  .dash-tabs { display: flex; gap: 6px; margin-bottom: 24px; border-bottom: 1px solid var(--gray-200); }
+  .dash-tab { padding: 11px 16px; font-weight: 700; font-size: 13.5px; color: var(--gray-500); cursor: pointer; border-bottom: 2px solid transparent; }
+  .dash-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+  .dash-panel { display: none; }
+  .dash-panel.active { display: block; }
+  .status-banner { padding: 13px 16px; border-radius: 10px; font-weight: 600; font-size: 13px; margin-bottom: 22px; }
+  .status-banner.pending { background: #fff7e0; color: #8a5a00; }
+  .status-banner.approved { background: var(--blue-pale); color: var(--blue-dark); }
+  .status-banner.rejected { background: #fdeaee; color: #b3243f; }
+  .avatar-row { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
+  .avatar-row img { width: 78px; height: 78px; border-radius: 50%; object-fit: cover; background: var(--blue-pale); }
+  .lang-checks label { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; background: var(--gray-100); padding: 6px 10px; border-radius: 20px; margin: 0 6px 6px 0; cursor: pointer; }
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Studify"><b>Studify</b></a>
+      <nav class="main-nav">
+        <a href="index.html" data-i18n="nav_home">Ana Sayfa</a>
+        <a href="teachers.html" data-i18n="nav_teachers">Öğretmenler</a>
+      </nav>
+      <div class="header-right">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Tema değiştir" title="Tema değiştir"></button>
+        <div class="lang-switcher" data-id="1"></div>
+        <div id="authArea"></div>
+        <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <nav class="mobile-nav"><div id="authAreaMobile"></div></nav>
+  </header>
+
+  <div class="dash-wrap">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+      <h2 style="color:var(--navy); margin:0;">Öğretmen Paneli</h2>
+      <a href="messages.html" class="btn btn-outline">💬 Sınıfım</a>
+    </div>
+    <p style="color:var(--gray-500); font-size:13.5px; margin-bottom:22px;">Profilinizi yönetin ve başvuru durumunuzu takip edin.</p>
+
+    <div id="statusBanner"></div>
+
+    <div class="dash-tabs">
+      <div class="dash-tab active" data-tab="profile">Profilim</div>
+      <div class="dash-tab" data-tab="calendar">Takvimim</div>
+      <div class="dash-tab" data-tab="reviews">Değerlendirmelerim</div>
+      <div class="dash-tab" data-tab="messages">Admin ile Mesajlaşma</div>
+    </div>
+
+    <div class="dash-panel active" id="panel-profile">
+      <div class="avatar-row">
+        <img id="dashAvatarPreview" src="" alt="Profil fotoğrafı">
+        <label class="btn btn-outline" style="cursor:pointer;">
+          Fotoğrafı Değiştir
+          <input type="file" id="dashAvatarInput" accept=".jpg,.jpeg,.png,.webp" style="display:none;">
+        </label>
+      </div>
+
+      <form id="profileForm">
+        <div class="form-group"><label>Ders</label><select id="dSubject"></select></div>
+        <div class="form-row">
+          <div class="form-group"><label>Saatlik Ücret ($)</label><input type="number" id="dPriceHourly" min="0"></div>
+          <div class="form-group"><label>Aylık Ücret ($)</label><input type="number" id="dPriceMonthly" min="0"></div>
+        </div>
+
+        <div class="form-group">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="dDiscountToggle"> Aylık ücrete indirim uygula</label>
+        </div>
+        <div class="form-group" id="dDiscountGroup" style="display:none;">
+          <label>Önceki Aylık Ücret (indirimsiz, $)</label>
+          <input type="number" id="dPriceMonthlyOriginal" min="0">
+        </div>
+
+        <div class="form-group"><label>Deneyim (Yıl)</label><input type="number" id="dExperience" min="0"></div>
+        <div class="form-group">
+          <label>Ders Şekli</label>
+          <div style="display:flex; gap:18px; font-size:13px;">
+            <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" id="dOnline"> Online</label>
+            <label style="display:flex; align-items:center; gap:6px;"><input type="checkbox" id="dOffline"> Yüz yüze</label>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Ülke</label><select id="dCountry"></select></div>
+          <div class="form-group"><label>Şehir</label><input type="text" id="dCity"></div>
+        </div>
+        <div class="form-group" id="dStreetGroup" style="display:none;"><label>Sokak / Mahalle</label><input type="text" id="dStreet"></div>
+        <div class="form-group"><label>Uyruk</label><select id="dNationality"></select></div>
+        <div class="form-group"><label>Öğretim Dilleri</label><div class="lang-checks" id="dLangs"></div></div>
+        <div class="form-group"><label>WhatsApp Numarası</label><input type="tel" id="dWhatsapp"></div>
+        <div class="form-group"><label>Üniversite (isteğe bağlı)</label><input type="text" id="dUniversity"></div>
+        <div class="form-group"><label>Kendiniz Hakkında</label><textarea id="dBio" rows="4"></textarea></div>
+
+        <p class="error-box" id="profileError"></p>
+        <p class="success-box" id="profileSuccess">✓ Kaydedildi. Profiliniz yeniden admin onayına gönderildi.</p>
+        <button type="submit" class="btn btn-primary btn-lg">Kaydet</button>
+      </form>
+
+      <div style="border-top:1px solid var(--gray-200); margin-top:32px; padding-top:22px;">
+        <h4 style="color:var(--red); font-size:13.5px; margin:0 0 8px;">Tehlikeli Bölge</h4>
+        <p style="font-size:12.5px; color:var(--gray-500); margin-bottom:12px;">Hesabınızı silmek kalıcıdır ve geri alınamaz. Profiliniz ve tüm verileriniz silinir.</p>
+        <button class="btn btn-outline" style="color:var(--red); border-color:var(--red); font-size:12.5px; padding:9px 16px;" id="deleteAccountBtn">Hesabımı Sil</button>
+      </div>
+    </div>
+
+    <div class="dash-panel" id="panel-reviews">
+      <div id="myReviewsList"><p style="color:var(--gray-500); font-size:13.5px;">Yükleniyor...</p></div>
+    </div>
+
+    <div class="dash-panel" id="panel-calendar">
+      <div style="background:var(--surface); border:1px solid var(--gray-200); border-radius:12px; padding:18px; margin-bottom:20px;">
+        <h4 style="margin:0 0 14px; color:var(--navy); font-size:14px;">Yeni müsaitlik ekle</h4>
+        <div class="form-row">
+          <div class="form-group"><label>Tarih</label><input type="date" id="slotDate"></div>
+          <div class="form-group"><label>Saat</label><input type="time" id="slotTime"></div>
+        </div>
+        <div class="form-group">
+          <label>Süre</label>
+          <select id="slotDuration">
+            <option value="30">30 dakika</option>
+            <option value="60" selected>60 dakika</option>
+            <option value="90">90 dakika</option>
+          </select>
+        </div>
+        <p class="error-box" id="slotError"></p>
+        <button class="btn btn-primary" id="addSlotBtn">Müsaitlik Ekle</button>
+      </div>
+
+      <h4 style="margin:0 0 12px; color:var(--navy); font-size:14px;">Ders programım</h4>
+      <div id="slotsList"><p style="color:var(--gray-500); font-size:13.5px;">Yükleniyor...</p></div>
+    </div>
+
+    <div class="dash-panel" id="panel-messages">
+      <div id="msgThread" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;"></div>
+      <div class="form-group"><label>Admin'e yeni mesaj</label><textarea id="newMsgText" rows="3" placeholder="Sorunuzu veya probleminizi yazın..."></textarea></div>
+      <p class="error-box" id="msgError"></p>
+      <button id="sendMsgBtn" class="btn btn-primary">Gönder</button>
+    </div>
+  </div>
+
+  <footer class="site-footer"><div class="container"><div class="footer-bottom" style="border-top:none; padding-top:0;"><span>🇹🇷</span> © 2026 Studify.</div></div></footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/countries.js"></script>
+<script src="js/script.js"></script>
+<script src="js/teacher-dashboard.js"></script>
+</body>
+</html>

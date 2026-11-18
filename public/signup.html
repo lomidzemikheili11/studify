@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kayıt Ol — Studify</title>
+<meta name="description" content="Studify'a katılın, öğrenci veya öğretmen olarak kayıt olun.">
+<meta property="og:title" content="Kayıt Ol — Studify">
+<meta property="og:description" content="Studify'a katılın, öğrenci veya öğretmen olarak kayıt olun.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/images/logo.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" href="/images/logo.png">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem("studifyTheme");if(t!=="light")document.documentElement.setAttribute("data-theme","dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<style>
+  .wizard-step { display: none; }
+  .wizard-step.active { display: block; }
+  .lang-checks { display: flex; gap: 10px; flex-wrap: wrap; }
+  .lang-checks label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; background: var(--gray-100); padding: 7px 12px; border-radius: 20px; cursor: pointer; }
+  .mode-checks { display: flex; gap: 18px; font-size: 13px; }
+  .mode-checks label { display: flex; align-items: center; gap: 6px; font-weight: 500; }
+  .wizard-nav { display: flex; gap: 10px; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Studify"><b>Studify</b></a>
+      <nav class="main-nav">
+        <a href="index.html" data-i18n="nav_home">Home</a>
+        <a href="teachers.html" data-i18n="nav_teachers">Teachers</a>
+      </nav>
+      <div class="header-right">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Tema değiştir" title="Tema değiştir"></button>
+        <div class="lang-switcher" data-id="1"></div>
+        <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <nav class="mobile-nav"><a href="index.html" data-i18n="nav_home">Home</a></nav>
+  </header>
+
+  <section class="auth-wrap">
+    <div class="auth-card auth-card-wide">
+      <a href="index.html" class="logo"><img src="images/logo.png" style="width:34px;height:34px;"><b>Studify</b></a>
+      <h2 data-i18n="auth_signup_title">Create an account</h2>
+      <p class="sub" data-i18n="auth_signup_sub">Join Studify</p>
+
+      <div class="role-toggle" id="roleToggle">
+        <button type="button" class="active" data-role="student" data-i18n="role_student">I'm a Student</button>
+        <button type="button" data-role="teacher" data-i18n="role_teacher">I'm a Teacher</button>
+      </div>
+
+      <form id="signupForm">
+
+        <div class="wizard-step active" id="step1">
+          <div class="form-row">
+            <div class="form-group"><label data-i18n="auth_firstname">First Name</label><input type="text" id="sFirstName" required></div>
+            <div class="form-group"><label data-i18n="auth_lastname">Last Name</label><input type="text" id="sLastName" required></div>
+          </div>
+          <div class="form-group"><label data-i18n="auth_email">Email</label><input type="email" id="sEmail" required></div>
+          <div class="form-group"><label data-i18n="auth_phone">Phone</label><input type="tel" id="sPhone" placeholder="+..." required></div>
+          <div class="form-group" id="parentPhoneGroup"><label data-i18n="auth_parent_phone">Parent/Guardian Phone</label><input type="tel" id="sParentPhone" placeholder="+..."></div>
+          <div class="form-group">
+            <label data-i18n="auth_password">Password</label>
+            <input type="password" id="sPassword" minlength="8" required>
+            <p style="font-size:11.5px; color:var(--gray-500); margin:5px 0 0;" data-i18n="auth_password_hint">At least 8 characters</p>
+          </div>
+
+          <div id="teacherBasicFields" style="display:none;">
+            <div class="form-group"><label data-i18n="search_subject">Subject</label><select id="tSubject"></select></div>
+            <div class="form-row">
+              <div class="form-group"><label>Saatlik Ücret ($) <span style="color:var(--red);">*</span></label><input type="number" id="tPriceHourly" min="0"></div>
+              <div class="form-group"><label>Aylık Ücret ($)</label><input type="number" id="tPriceMonthly" min="0"></div>
+            </div>
+            <div class="form-group"><label>Deneyim (Yıl) <span style="color:var(--red);">*</span></label><input type="number" id="tExperience" min="0"></div>
+            <div class="form-group">
+              <label>Ders Şekli</label>
+              <div class="mode-checks">
+                <label><input type="checkbox" id="tOnline" checked> <span data-i18n="search_online">Online</span></label>
+                <label><input type="checkbox" id="tOffline"> <span data-i18n="search_offline">In Person</span></label>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label data-i18n="search_country">Country</label><select id="tCountry"></select></div>
+              <div class="form-group"><label>Şehir <span style="color:var(--red);">*</span></label><input type="text" id="tCity"></div>
+            </div>
+            <div class="form-group" id="tStreetGroup" style="display:none;"><label data-i18n="field_street">Street / Neighborhood</label><input type="text" id="tStreet"></div>
+            <div class="form-group"><label data-i18n="search_nationality">Nationality</label><select id="tNationality"></select></div>
+            <div class="form-group"><label data-i18n="search_lang">Teaching Languages</label><div class="lang-checks" id="tLangs"></div></div>
+            <div class="form-group"><label>WhatsApp Numarası</label><input type="tel" id="tWhatsapp" placeholder="+..."></div>
+          </div>
+
+          <p class="error-box" id="step1Error"></p>
+          <div class="wizard-nav">
+            <button type="button" class="btn btn-primary btn-lg btn-block" id="toStep2Btn">Devam Et</button>
+          </div>
+        </div>
+
+        <div class="wizard-step" id="step3">
+          <h3 style="color:var(--navy); font-size:16px; margin:0 0 10px;">Doğrulama Belgeleri</h3>
+          <div class="form-group">
+            <label>Kimlik Belgesi (zorunlu)</label>
+            <input type="file" id="tIdDoc" accept=".jpg,.jpeg,.png,.pdf">
+          </div>
+          <div class="form-group">
+            <label>Diploma / Sertifika (isteğe bağlı)</label>
+            <input type="file" id="tDiploma" accept=".jpg,.jpeg,.png,.pdf">
+          </div>
+          <div class="form-group">
+            <label>Üniversite (isteğe bağlı)</label>
+            <input type="text" id="tUniversity">
+          </div>
+          <div class="form-group">
+            <label>Kendiniz Hakkında <span style="color:var(--red);">*</span></label>
+            <textarea id="tBio" rows="3"></textarea>
+          </div>
+          <p style="font-size:12px; color:var(--gray-500); margin:-6px 0 16px;">Kayıt olduğunuzda profiliniz hemen yayına alınır. Belgeleriniz güvenlik amacıyla saklanır ve yalnızca admin ekibimiz tarafından görülebilir.</p>
+
+          <div class="form-check"><label><input type="checkbox" id="signupTerms"> <a href="terms.html" target="_blank" data-i18n="auth_terms_link">Terms of Use</a><span data-i18n="auth_terms_post"></span></label></div>
+          <p class="error-box" id="step3Error"></p>
+          <div class="wizard-nav">
+            <button type="button" class="btn btn-outline" id="backToStep1FromDocsBtn">Geri</button>
+            <button type="submit" class="btn btn-primary btn-block" id="submitBtn" data-i18n="auth_signup_btn">Sign Up</button>
+          </div>
+        </div>
+
+        <div class="wizard-step" id="studentFinal">
+          <div class="form-check"><label><input type="checkbox" id="signupTermsStudent"> <a href="terms.html" target="_blank" data-i18n="auth_terms_link">Terms of Use</a><span data-i18n="auth_terms_post"></span></label></div>
+          <p class="error-box" id="studentError"></p>
+          <div class="wizard-nav">
+            <button type="button" class="btn btn-outline" id="backToStep1FromStudentBtn">Geri</button>
+            <button type="submit" class="btn btn-primary btn-block" id="studentSubmitBtn" data-i18n="auth_signup_btn">Sign Up</button>
+          </div>
+        </div>
+
+      </form>
+
+      <p class="auth-foot"><span data-i18n="auth_have_account">Already have an account?</span> <a href="login.html" data-i18n="auth_login_link">Log in</a></p>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container"><div class="footer-bottom" style="border-top:none; padding-top:0;"><span>🇹🇷</span> © 2026 Studify.</div></div>
+  </footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/countries.js"></script>
+<script src="js/script.js"></script>
+<script src="js/signup.js"></script>
+</body>
+</html>

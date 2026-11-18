@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Öğretmenler — Admin Panel</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="adminShell"></div>
+<div id="adminPageContent" style="display:none;">
+  <div class="a-panel">
+    <div class="a-tabs" id="statusTabs">
+      <div class="a-tab active" data-status="pending">Bekleyen</div>
+      <div class="a-tab" data-status="approved">Onaylanmış</div>
+      <div class="a-tab" data-status="rejected">Reddedilmiş</div>
+      <div class="a-tab" data-status="all">Hepsi</div>
+    </div>
+    <div id="teachersTableBox" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<div class="a-modal-overlay" id="rejectModal">
+  <div class="a-modal">
+    <span class="a-modal-close" id="rejectModalClose">✕</span>
+    <h3>Öğretmeni reddet</h3>
+    <div class="a-form-group"><label>Sebep (öğretmene gösterilecek)</label><textarea id="rejectReason" rows="3"></textarea></div>
+    <button class="a-btn a-btn-danger a-btn-block" id="confirmRejectBtn">Reddet</button>
+  </div>
+</div>
+
+<div class="a-modal-overlay" id="detailModal">
+  <div class="a-modal" style="max-width:560px;"><span class="a-modal-close" id="detailModalClose">✕</span><div id="detailModalBody"></div></div>
+</div>
+
+<script src="admin-api.js"></script>
+<script>
+  var currentStatus = "pending";
+  var pendingRejectId = null;
+  var loadedTeachers = [];
+
+  function statusPill(status) {
+    var map = { pending: "Bekliyor", approved: "Onaylandı", rejected: "Reddedildi" };
+    return '<span class="a-pill a-pill-' + status + '">' + map[status] + '</span>';
+  }
+  function avatarSrc(t) { return t.avatar || ("https://ui-avatars.com/api/?background=1c2b3d&color=1a56db&name=" + encodeURIComponent(t.name)); }
+
+  var APPLICATION_QUESTIONS = [
+    "Kendinizi ve öğretmenlik yolculuğunuzu kısaca anlatır mısınız?",
+    "Bugüne kadar kaç öğrenciyle çalıştınız ve bu deneyim size neler öğretti?",
+    "Öğretmenlik yapmaya nasıl karar verdiniz? Bu alanı seçme sebebiniz nedir?",
+    "Şimdiye kadar aldığınız en zorlu öğrenciyle yaşadığınız deneyimi paylaşır mısınız?",
+    "Kendinizi diğer öğretmenlerden ayıran en güçlü yönünüz nedir?",
+    "Bir dersi planlarken izlediğiniz adımları anlatır mısınız?",
+    "Bir öğrenci konuyu bir türlü anlamıyorsa, yaklaşımınızı nasıl değiştirirsiniz?",
+    "Öğrencinin motivasyonunu nasıl yüksek tutarsınız?",
+    "Başarıyı nasıl ölçersiniz — bir öğrencinin gerçekten ilerlediğini nereden anlarsınız?",
+    "Online ve yüz yüze ders arasında yaklaşımınız değişir mi? Nasıl?",
+    "Ders sırasında öğrenci sinirlenip ağlarsa, o anda ne yaparsınız?",
+    "Öğrenci sürekli dikkatsizse ve materyali öğrenmiyorsa, yönteminizi nasıl değiştirirsiniz?",
+    "Bir veli, kullandığınız yönteme itiraz ederse, buna nasıl yanıt verirsiniz?",
+    "Öğrenci size karşı açıkça saygısız davranırsa, tepkiniz ne olur?",
+    "Bir öğrenci sürekli geç kalıyor veya derslere hazırlıksız geliyorsa, bu durumu nasıl ele alırsınız?"
+  ];
+
+  async function loadTeachers() {
+    document.getElementById("adminPageTitle").textContent = "Öğretmenler";
+    var box = document.getElementById("teachersTableBox");
+    box.innerHTML = '<div class="a-empty">Yükleniyor...</div>';
+    try {
+      var data = await adminFetch("/admin/teachers?status=" + currentStatus);
+      loadedTeachers = data.teachers;
+      if (data.teachers.length === 0) { box.innerHTML = '<div class="a-empty">Bu kategoride öğretmen yok.</div>'; return; }
+      box.innerHTML =
+        '<table class="a-table"><thead><tr><th></th><th>Ad</th><th>Ders</th><th>Ülke</th><th>Fiyat</th><th>Durum</th><th>Kullanıcı</th><th>İşlem</th></tr></thead><tbody>' +
+        data.teachers.map(function (t) {
+          var actions = '<button class="a-btn a-btn-outline a-btn-sm" data-detail="' + t.id + '">Detay</button>';
+          if (t.status !== "approved") actions += ' <button class="a-btn a-btn-primary a-btn-sm" data-approve="' + t.id + '">Onayla</button>';
+          if (t.status !== "rejected") actions += ' <button class="a-btn a-btn-danger a-btn-sm" data-reject="' + t.id + '">Reddet</button>';
+          actions += ' <button class="a-btn a-btn-danger a-btn-sm" data-delete="' + t.id + '">Sil</button>';
+          var userStatusPill = t.userStatus === "blocked" ? '<span class="a-pill a-pill-blocked">Bloklu</span>' : '<span class="a-pill a-pill-active">Aktif</span>';
+          var userActions = t.userStatus === "blocked"
+            ? '<button class="a-btn a-btn-outline a-btn-sm" data-unblock="' + t.userId + '">Blok Kaldır</button>'
+            : '<button class="a-btn a-btn-danger a-btn-sm" data-block="' + t.userId + '">Blokla</button>';
+          userActions += ' <button class="a-btn a-btn-outline a-btn-sm" data-impersonate="' + t.userId + '">Hesabına Gir</button>';
+          userActions += ' <button class="a-btn a-btn-outline a-btn-sm" data-compose="' + t.userId + '" data-name="' + adminEscape(t.name) + '">Mesaj Yaz</button>';
+          return '<tr><td><img class="a-avatar-sm" src="' + avatarSrc(t) + '"></td><td>' + adminEscape(t.name) + '</td><td>' + adminEscape(t.subject) + '</td><td>' + adminEscape(t.country || "—") + '</td><td>$' + t.priceHourly + '/sa</td><td>' + statusPill(t.status) + '</td><td>' + userStatusPill + '<div class="a-actions" style="margin-top:6px;">' + userActions + '</div></td><td><div class="a-actions">' + actions + '</div></td></tr>';
+        }).join("") + '</tbody></table>';
+
+      box.querySelectorAll("[data-approve]").forEach(function (btn) { btn.addEventListener("click", function () { approveTeacher(btn.getAttribute("data-approve")); }); });
+      box.querySelectorAll("[data-reject]").forEach(function (btn) { btn.addEventListener("click", function () { openRejectModal(btn.getAttribute("data-reject")); }); });
+      box.querySelectorAll("[data-delete]").forEach(function (btn) { btn.addEventListener("click", function () { deleteTeacher(btn.getAttribute("data-delete")); }); });
+      box.querySelectorAll("[data-detail]").forEach(function (btn) { btn.addEventListener("click", function () { openDetailModal(loadedTeachers.find(function (x) { return x.id === btn.getAttribute("data-detail"); })); }); });
+      box.querySelectorAll("[data-block]").forEach(function (btn) { btn.addEventListener("click", function () { blockUser(btn.getAttribute("data-block")); }); });
+      box.querySelectorAll("[data-unblock]").forEach(function (btn) { btn.addEventListener("click", function () { unblockUser(btn.getAttribute("data-unblock")); }); });
+      box.querySelectorAll("[data-impersonate]").forEach(function (btn) { btn.addEventListener("click", function () { impersonateUser(btn.getAttribute("data-impersonate")); }); });
+      box.querySelectorAll("[data-compose]").forEach(function (btn) { btn.addEventListener("click", function () { adminOpenComposeModal(btn.getAttribute("data-compose"), btn.getAttribute("data-name")); }); });
+    } catch (err) { box.innerHTML = '<div class="a-empty">Hata: ' + err.message + '</div>'; }
+  }
+
+  async function approveTeacher(id) {
+    try { await adminFetch("/admin/teachers/" + id + "/approve", { method: "PUT" }); adminToast("Öğretmen onaylandı."); loadTeachers(); }
+    catch (err) { adminToast(err.message, true); }
+  }
+  function openRejectModal(id) { pendingRejectId = id; document.getElementById("rejectReason").value = ""; document.getElementById("rejectModal").classList.add("open"); }
+  async function deleteTeacher(id) {
+    if (!confirm("Bu öğretmen profilini kalıcı olarak silmek istediğinize emin misiniz?")) return;
+    try { await adminFetch("/admin/teachers/" + id, { method: "DELETE" }); adminToast("Öğretmen silindi."); loadTeachers(); }
+    catch (err) { adminToast(err.message, true); }
+  }
+  async function blockUser(userId) {
+    if (!confirm("Bu kullanıcıyı bloklamak istediğinize emin misiniz? Profili sitede görünmez olacak.")) return;
+    try { await adminFetch("/admin/users/" + userId + "/block", { method: "PUT" }); adminToast("Kullanıcı bloklandı."); loadTeachers(); }
+    catch (err) { adminToast(err.message, true); }
+  }
+  async function unblockUser(userId) {
+    try { await adminFetch("/admin/users/" + userId + "/unblock", { method: "PUT" }); adminToast("Blok kaldırıldı."); loadTeachers(); }
+    catch (err) { adminToast(err.message, true); }
+  }
+  async function impersonateUser(userId) {
+    if (!confirm("Bu kullanıcının hesabına girmek istediğinize emin misiniz? Bu işlem kayıt altına alınır.")) return;
+    try {
+      var res = await adminFetch("/admin/users/" + userId + "/impersonate", { method: "POST" });
+      localStorage.setItem("studifyToken", res.token);
+      window.open("/teacher-dashboard.html", "_blank");
+      adminToast("Hesaba giriş yapıldı, yeni sekmede açıldı.");
+    } catch (err) { adminToast(err.message, true); }
+  }
+
+  function openDetailModal(t) {
+    if (!t) return;
+    var langsHTML = (t.langs || []).join(", ");
+    var answersHTML = (t.applicationAnswers || []).map(function (a, i) {
+      if (!a) return "";
+      return '<div style="margin-bottom:12px;"><div style="font-size:11.5px; color:var(--a-text-dim); margin-bottom:3px;">' + (i + 1) + '. ' + adminEscape(APPLICATION_QUESTIONS[i] || "") + '</div><div style="font-size:13px;">' + adminEscape(a) + '</div></div>';
+    }).join("");
+    document.getElementById("detailModalBody").innerHTML =
+      '<h3>' + adminEscape(t.name) + '</h3>' +
+      '<img src="' + avatarSrc(t) + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:14px;">' +
+      '<p style="font-size:13px; line-height:1.8; color:var(--a-text-dim);">' +
+        '<b style="color:var(--a-text);">Ders:</b> ' + adminEscape(t.subject) + '<br>' +
+        '<b style="color:var(--a-text);">Saatlik:</b> $' + t.priceHourly + ' &nbsp; <b style="color:var(--a-text);">Aylık:</b> $' + (t.priceMonthly || "—") + '<br>' +
+        '<b style="color:var(--a-text);">Deneyim:</b> ' + t.experience + ' yıl<br>' +
+        '<b style="color:var(--a-text);">Diller:</b> ' + langsHTML + '<br>' +
+        '<b style="color:var(--a-text);">Ülke/Şehir:</b> ' + adminEscape(t.country || "—") + ' / ' + adminEscape(t.city || "—") + '<br>' +
+        '<b style="color:var(--a-text);">Uyruk:</b> ' + adminEscape(t.nationality || "—") + '<br>' +
+        '<b style="color:var(--a-text);">Üniversite:</b> ' + adminEscape(t.university || "—") + '<br>' +
+        '<b style="color:var(--a-text);">Email:</b> ' + adminEscape(t.email || "") + ' &nbsp; <b style="color:var(--a-text);">Tel:</b> ' + adminEscape(t.phone || "") + '<br>' +
+        '<b style="color:var(--a-text);">WhatsApp:</b> ' + adminEscape(t.whatsapp || "") +
+      '</p>' +
+      '<div style="border-top:1px solid var(--a-border); padding-top:12px; margin-top:12px;">' +
+        '<b style="font-size:12.5px;">Belgeler:</b><br>' +
+        (t.idDocument ? '<button class="a-btn a-btn-outline a-btn-sm" style="margin-top:8px; margin-right:8px;" data-view-doc="' + t.id + '" data-doc-type="idDocument">Kimlik Belgesini Gör</button>' : '<span style="font-size:12px; color:var(--a-danger);">Kimlik belgesi yok</span>') +
+        (t.diploma ? '<button class="a-btn a-btn-outline a-btn-sm" style="margin-top:8px;" data-view-doc="' + t.id + '" data-doc-type="diploma">Diploma/Sertifikayı Gör</button>' : '') +
+      '</div>' +
+      '<p style="font-size:13px; color:var(--a-text-dim); border-top:1px solid var(--a-border); padding-top:12px; margin-top:12px;">' + (adminEscape(t.bio) || "Bio yok.") + '</p>' +
+      (answersHTML ? '<div style="border-top:1px solid var(--a-border); padding-top:12px; margin-top:12px;"><b style="font-size:12.5px;">Başvuru Testi Cevapları:</b><div style="margin-top:10px;">' + answersHTML + '</div></div>' : '');
+    document.getElementById("detailModal").classList.add("open");
+
+    document.querySelectorAll("[data-view-doc]").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        var teacherId = btn.getAttribute("data-view-doc");
+        var docType = btn.getAttribute("data-doc-type");
+        var originalText = btn.textContent;
+        btn.textContent = "Yükleniyor...";
+        btn.disabled = true;
+        try {
+          var res = await fetch("/api/admin/documents/" + teacherId + "/" + docType, {
+            headers: { Authorization: "Bearer " + adminGetToken() }
+          });
+          if (!res.ok) throw new Error("Belge yüklenemedi.");
+          var blob = await res.blob();
+          window.open(URL.createObjectURL(blob), "_blank");
+        } catch (err) {
+          adminToast(err.message, true);
+        } finally {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+      });
+    });
+  }
+
+  document.getElementById("statusTabs").addEventListener("click", function (e) {
+    var tab = e.target.closest(".a-tab"); if (!tab) return;
+    document.querySelectorAll("#statusTabs .a-tab").forEach(function (t) { t.classList.remove("active"); });
+    tab.classList.add("active"); currentStatus = tab.getAttribute("data-status"); loadTeachers();
+  });
+  document.getElementById("rejectModalClose").addEventListener("click", function () { document.getElementById("rejectModal").classList.remove("open"); });
+  document.getElementById("detailModalClose").addEventListener("click", function () { document.getElementById("detailModal").classList.remove("open"); });
+  document.getElementById("confirmRejectBtn").addEventListener("click", async function () {
+    try {
+      await adminFetch("/admin/teachers/" + pendingRejectId + "/reject", { method: "PUT", body: { reason: document.getElementById("rejectReason").value.trim() } });
+      document.getElementById("rejectModal").classList.remove("open");
+      adminToast("Öğretmen reddedildi.");
+      loadTeachers();
+    } catch (err) { adminToast(err.message, true); }
+  });
+
+  initAdminShell("teachers").then(function (user) { if (user) loadTeachers(); });
+</script>
+</body>
+</html>

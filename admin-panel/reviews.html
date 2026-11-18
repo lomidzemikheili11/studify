@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Değerlendirmeler — Admin Panel</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="adminShell"></div>
+<div id="adminPageContent" style="display:none;">
+  <div class="a-panel">
+    <div class="a-panel-head"><h3>Tüm değerlendirmeler</h3></div>
+    <div id="reviewsBox" style="padding:16px 20px;"></div>
+  </div>
+</div>
+
+<script src="admin-api.js"></script>
+<script>
+  function stars(rating) { var out = ""; for (var i = 1; i <= 5; i++) out += i <= rating ? "★" : "☆"; return out; }
+
+  async function loadReviews() {
+    document.getElementById("adminPageTitle").textContent = "Değerlendirmeler";
+    var box = document.getElementById("reviewsBox");
+    box.innerHTML = '<div class="a-empty">Yükleniyor...</div>';
+    try {
+      var data = await adminFetch("/admin/reviews");
+      if (data.reviews.length === 0) { box.innerHTML = '<div class="a-empty">Henüz değerlendirme yok.</div>'; return; }
+      box.innerHTML = data.reviews.map(function (r) {
+        return '<div class="a-msg-bubble">' +
+          '<div class="meta"><b style="color:var(--a-text);">' + adminEscape(r.userName) + '</b> → ' + adminEscape(r.teacherName) + ' &middot; ' + new Date(r.createdAt).toLocaleDateString("tr-TR") + '</div>' +
+          '<div style="color:var(--a-warning); margin:4px 0;">' + stars(r.rating) + '</div>' +
+          '<div>' + adminEscape(r.comment) + '</div>' +
+          '<button class="a-btn a-btn-danger a-btn-sm" style="margin-top:10px;" data-delete="' + r.id + '">Sil</button>' +
+        '</div>';
+      }).join("");
+      box.querySelectorAll("[data-delete]").forEach(function (btn) {
+        btn.addEventListener("click", async function () {
+          if (!confirm("Bu değerlendirmeyi silmek istediğinize emin misiniz?")) return;
+          try { await adminFetch("/admin/reviews/" + btn.getAttribute("data-delete"), { method: "DELETE" }); adminToast("Değerlendirme silindi."); loadReviews(); }
+          catch (err) { adminToast(err.message, true); }
+        });
+      });
+    } catch (err) { box.innerHTML = '<div class="a-empty">Hata: ' + err.message + '</div>'; }
+  }
+  initAdminShell("reviews").then(function (user) { if (user) loadReviews(); });
+</script>
+</body>
+</html>

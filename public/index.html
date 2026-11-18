@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studify — Dünyanın Her Yerinden Öğretmen Bulun</title>
+<meta name="description" content="Kimliği ve deneyimi doğrulanmış binlerce öğretmen arasından size uygun olanı bulun. Online veya yüz yüze, dünyanın her yerinden, kendi dilinizde.">
+<meta property="og:title" content="Studify — Dünyanın Her Yerinden Öğretmen Bulun">
+<meta property="og:description" content="Kimliği ve deneyimi doğrulanmış binlerce öğretmen arasından size uygun olanı bulun. Online veya yüz yüze, dünyanın her yerinden, kendi dilinizde.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="/images/logo.png">
+<meta name="twitter:card" content="summary">
+<link rel="icon" type="image/png" href="/images/logo.png">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem("studifyTheme");if(t!=="light")document.documentElement.setAttribute("data-theme","dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+</head>
+<body>
+
+  <div class="trust-bar">
+    <div class="container">
+      <span>🛡️ <span data-i18n="hero_badge">Trusted worldwide</span></span>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo">
+        <img src="images/logo.png" alt="Studify">
+        <b>Studify</b>
+      </a>
+
+      <nav class="main-nav">
+        <a href="index.html" class="active" data-i18n="nav_home">Home</a>
+        <a href="teachers.html" data-i18n="nav_teachers">Teachers</a>
+        <a href="how-it-works.html" data-i18n="nav_how">How It Works</a>
+        <a href="blog.html">Blog</a>
+        <a href="about.html" data-i18n="nav_about">About Us</a>
+        <a href="contact.html" data-i18n="nav_contact">Contact</a>
+      </nav>
+
+      <div class="header-right">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Tema değiştir" title="Tema değiştir"></button>
+        <div class="lang-switcher" data-id="1"></div>
+        <div id="authArea">
+          <a href="login.html" class="btn btn-outline" data-i18n="login">Log In</a>
+          <a href="signup.html" class="btn btn-primary" data-i18n="signup">Sign Up</a>
+        </div>
+        <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+
+    <nav class="mobile-nav">
+      <a href="index.html" data-i18n="nav_home">Home</a>
+      <a href="teachers.html" data-i18n="nav_teachers">Teachers</a>
+      <a href="how-it-works.html" data-i18n="nav_how">How It Works</a>
+        <a href="blog.html">Blog</a>
+      <a href="about.html" data-i18n="nav_about">About Us</a>
+      <a href="contact.html" data-i18n="nav_contact">Contact</a>
+      <div id="authAreaMobile"><a href="login.html" class="btn btn-outline btn-block" data-i18n="login">Giriş</a></div>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-top-grid">
+      <div class="hero-text">
+        <div class="hero-badge hero-anim" style="animation-delay:.05s;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          <span data-i18n="hero_badge">Trusted worldwide</span>
+        </div>
+        <h1 class="hero-anim" style="animation-delay:.15s;"><span data-i18n="hero_title_1">Find the perfect teacher,</span> <span class="hero-gradient-word" data-i18n="hero_title_2">anywhere in the world</span></h1>
+        <p class="lead hero-anim" style="animation-delay:.25s;" data-i18n="hero_lead">Thousands of verified teachers.</p>
+
+        <div class="hero-features-row hero-anim" style="animation-delay:.3s;">
+          <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Verified Teachers</span>
+          <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/></svg> Affordable Prices</span>
+          <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg> Any Language</span>
+        </div>
+
+        <div class="hero-cta-row hero-anim" style="animation-delay:.4s;">
+          <a href="teachers.html" class="btn btn-primary btn-lg">Find a Teacher →</a>
+          <a href="how-it-works.html" class="btn btn-outline btn-lg">How It Works</a>
+        </div>
+      </div>
+
+      <div class="hero-globe-wrap hero-anim" style="animation-delay:.2s;">
+        <div class="hero-globe-orbit orbit-2"></div>
+        <div class="hero-globe-orbit"></div>
+        <div class="hero-globe">
+          <div class="hero-globe-texture"></div>
+          <div class="hero-globe-shading"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container hero-anim" style="animation-delay:.5s;">
+      <form class="search-bar" id="heroSearchForm">
+        <div class="field">
+          <label data-i18n="search_country"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg> Country</label>
+          <select name="country" id="fCountry"></select>
+        </div>
+        <div class="field">
+          <label data-i18n="search_city"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> City</label>
+          <input type="text" name="city" id="fCity" placeholder="">
+        </div>
+        <div class="field">
+          <label data-i18n="search_subject"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a8 8 0 0 1 16 0v1"/></svg> Subject</label>
+          <select name="subject" id="fSubject"></select>
+        </div>
+        <div class="field">
+          <label data-i18n="search_mode"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/></svg> Lesson Type</label>
+          <select name="mode" id="fMode">
+            <option value="" data-i18n="search_all">All</option>
+            <option value="online" data-i18n="search_online">Online</option>
+            <option value="offline" data-i18n="search_offline">In Person</option>
+          </select>
+        </div>
+        <div class="field">
+          <label data-i18n="search_lang"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg> Language</label>
+          <select name="lang" id="fLang"></select>
+        </div>
+        <div class="field">
+          <label data-i18n="search_sort"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18M6 12h12M10 18h4"/></svg> Sort By</label>
+          <select name="sort">
+            <option value="newest" data-i18n="sort_newest">Newest</option>
+            <option value="rating" data-i18n="sort_rating">Rating</option>
+            <option value="price_asc" data-i18n="sort_price">Price: low to high</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> <span data-i18n="btn_search">Search</span></button>
+      </form>
+
+      <div class="stats-bar">
+        <div class="stat-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>
+          <div class="stat-value" id="statTeachers">0</div><div class="stat-label" data-i18n="stat_teachers">Verified teachers</div>
+        </div>
+        <div class="stat-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>
+          <div class="stat-value" id="statCountries">0</div><div class="stat-label" data-i18n="stat_countries">Countries</div>
+        </div>
+        <div class="stat-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10L12 5 2 10l10 5 10-5zM6 12v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>
+          <div class="stat-value" id="statStudents">0</div><div class="stat-label" data-i18n="stat_students">Students</div>
+        </div>
+        <div class="stat-item">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/></svg>
+          <div class="stat-value" id="statRating">—</div><div class="stat-label" data-i18n="stat_rating">Average rating</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:8px;">
+    <div class="container">
+      <div class="section-head">
+        <h2 data-i18n="section_top_teachers">Featured Teachers</h2>
+        <span class="badge-count" id="homeBadgeCount">0</span>
+      </div>
+      <div class="teacher-grid" id="homeTeacherGrid"></div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="logo" style="margin-bottom:12px;"><img src="images/logo.png" style="width:30px;height:30px;"><b style="color:#fff;">Studify</b></a>
+          <p data-i18n="footer_desc">Meet verified teachers worldwide.</p>
+        </div>
+        <div>
+          <h5 data-i18n="footer_nav">Navigation</h5>
+          <ul>
+            <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+            <li><a href="teachers.html" data-i18n="nav_teachers">Teachers</a></li>
+            <li><a href="how-it-works.html" data-i18n="nav_how">How It Works</a></li>
+            <li><a href="about.html" data-i18n="nav_about">About Us</a></li>
+          </ul>
+        </div>
+        <div>
+          <h5 data-i18n="footer_account">Account</h5>
+          <ul>
+            <li><a href="login.html" data-i18n="login">Log In</a></li>
+            <li><a href="signup.html" data-i18n="signup">Sign Up</a></li>
+            <li><a href="contact.html" data-i18n="footer_about_link">Support</a></li>
+            <li><a href="terms.html">Kullanım Şartları</a></li>
+            <li><a href="privacy.html">Gizlilik Politikası</a></li>
+          </ul>
+        </div>
+        <div>
+          <h5 data-i18n="footer_contact">Contact</h5>
+          <ul>
+            <li><a href="mailto:info@studify.com">info@studify.com</a></li>
+            <li><a href="contact.html" data-i18n="nav_contact">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>🇹🇷</span> © 2026 Studify. <span data-i18n="footer_rights">All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/countries.js"></script>
+<script src="js/script.js"></script>
+<script src="js/currency-timezone.js"></script>
+<script src="js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İki Adımlı Doğrulama — Admin Panel</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="admin-login-wrap">
+    <div class="admin-login-card" style="max-width:440px;">
+      <div class="admin-login-logo">
+        <img src="/images/logo.png" onerror="this.style.display='none'" alt="">
+        <div><b>STUDIFY</b><span>Admin Panel</span></div>
+      </div>
+
+      <div id="notYetEnabled" style="display:none;">
+        <h2>İki Adımlı Doğrulamayı Kurun</h2>
+        <p class="sub">Hesabınızın güvenliği için 2FA kurulumu zorunludur. Google Authenticator, Microsoft Authenticator veya benzer bir uygulama kullanın.</p>
+
+        <div style="text-align:center; background:#fff; padding:16px; border-radius:10px; margin-bottom:16px;">
+          <img id="qrImage" src="" alt="QR kod" style="width:180px; height:180px;">
+        </div>
+        <p style="font-size:12px; color:var(--a-text-dim); text-align:center; margin-bottom:6px;">QR kodu okutamıyorsanız, bu kodu manuel girin:</p>
+        <p style="font-size:13px; text-align:center; font-family:monospace; background:#0f1a26; padding:8px; border-radius:6px; word-break:break-all; margin-bottom:20px;" id="manualSecret"></p>
+
+        <form id="confirmForm">
+          <div class="a-form-group"><label>Uygulamadaki 6 haneli kodu girin</label><input type="text" id="confirmCode" inputmode="numeric" maxlength="6" required></div>
+          <p class="a-error" id="confirmError"></p>
+          <button type="submit" class="a-btn a-btn-primary a-btn-block">Onayla ve Etkinleştir</button>
+        </form>
+      </div>
+
+      <div id="alreadyEnabled" style="display:none;">
+        <h2>İki Adımlı Doğrulama Aktif</h2>
+        <p class="sub">✓ Hesabınız 2FA ile korunuyor.</p>
+        <a href="index.html" class="a-btn a-btn-primary a-btn-block" style="margin-bottom:16px;">Dashboard'a Dön</a>
+
+        <div style="border-top:1px solid var(--a-border); padding-top:18px; margin-top:6px;">
+          <p style="font-size:12.5px; color:var(--a-text-dim); margin-bottom:12px;">Kimlik doğrulama cihazınıza erişiminizi kaybettiyseniz, şifrenizi girerek 2FA'yı kapatabilirsiniz.</p>
+          <form id="disableForm">
+            <div class="a-form-group"><label>Şifre</label><input type="password" id="disablePassword" required></div>
+            <p class="a-error" id="disableError"></p>
+            <button type="submit" class="a-btn a-btn-danger a-btn-block">2FA'yı Devre Dışı Bırak</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="admin-api.js"></script>
+<script>
+  (async function () {
+    var user = await adminRequireAuth();
+    if (!user) return;
+
+    if (user.twoFactorEnabled) {
+      document.getElementById("alreadyEnabled").style.display = "block";
+    } else {
+      document.getElementById("notYetEnabled").style.display = "block";
+      try {
+        var data = await adminFetch("/auth/2fa/setup");
+        document.getElementById("qrImage").src = data.qrDataUrl;
+        document.getElementById("manualSecret").textContent = data.secret;
+      } catch (err) {
+        document.getElementById("confirmError").textContent = err.message;
+        document.getElementById("confirmError").style.display = "block";
+      }
+    }
+  })();
+
+  document.getElementById("confirmForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var errorBox = document.getElementById("confirmError");
+    errorBox.style.display = "none";
+    try {
+      await adminFetch("/auth/2fa/confirm", { method: "POST", body: { code: document.getElementById("confirmCode").value.trim() } });
+      window.location.href = "index.html";
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = "block";
+    }
+  });
+
+  document.getElementById("disableForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var errorBox = document.getElementById("disableError");
+    errorBox.style.display = "none";
+    if (!confirm("2FA'yı devre dışı bırakmak hesabınızın güvenliğini azaltır. Emin misiniz?")) return;
+    try {
+      await adminFetch("/auth/2fa/disable", { method: "POST", body: { password: document.getElementById("disablePassword").value } });
+      window.location.reload();
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = "block";
+    }
+  });
+</script>
+</body>
+</html>

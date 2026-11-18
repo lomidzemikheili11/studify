@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>İşlem Kayıtları — Admin Panel</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="adminShell"></div>
+<div id="adminPageContent" style="display:none;">
+  <div class="a-panel">
+    <div class="a-panel-head"><h3>Admin işlem kayıtları</h3></div>
+    <p style="padding:0 20px 14px; font-size:12.5px; color:var(--a-text-dim);">Hesaplara giriş gibi hassas işlemler burada kayıt altına alınır.</p>
+    <div id="auditBox"></div>
+  </div>
+</div>
+
+<script src="admin-api.js"></script>
+<script>
+  async function loadAudit() {
+    document.getElementById("adminPageTitle").textContent = "İşlem Kayıtları";
+    var box = document.getElementById("auditBox");
+    box.innerHTML = '<div class="a-empty">Yükleniyor...</div>';
+    try {
+      var data = await adminFetch("/admin/audit-log");
+      if (data.log.length === 0) { box.innerHTML = '<div class="a-empty">Henüz kayıt yok.</div>'; return; }
+      box.innerHTML =
+        '<table class="a-table"><thead><tr><th>İşlem</th><th>Hedef Kullanıcı</th><th>Tarih</th></tr></thead><tbody>' +
+        data.log.map(function (l) {
+          var actionLabel = l.action === "impersonate" ? "Hesaba giriş yapıldı" : l.action;
+          return '<tr><td>' + adminEscape(actionLabel) + '</td><td>' + adminEscape(l.targetUserName) + '</td><td>' + new Date(l.createdAt).toLocaleString("tr-TR") + '</td></tr>';
+        }).join("") + '</tbody></table>';
+    } catch (err) { box.innerHTML = '<div class="a-empty">Hata: ' + err.message + '</div>'; }
+  }
+  initAdminShell("audit").then(function (user) { if (user) loadAudit(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mesajlar — Admin Panel</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="adminShell"></div>
+<div id="adminPageContent" style="display:none;">
+  <div class="a-panel">
+    <div class="a-tabs" id="typeTabs">
+      <div class="a-tab active" data-type="all">Hepsi</div>
+      <div class="a-tab" data-type="teacher">Öğretmenlerden</div>
+      <div class="a-tab" data-type="student">Öğrencilerden</div>
+      <div class="a-tab" data-type="contact">Site Formundan</div>
+    </div>
+    <div id="messagesListBox" style="padding:16px 20px;"></div>
+  </div>
+</div>
+
+<div class="a-modal-overlay" id="msgModal">
+  <div class="a-modal" style="max-width:520px;"><span class="a-modal-close" id="msgModalClose">✕</span><div id="msgModalBody"></div></div>
+</div>
+
+<script src="admin-api.js"></script>
+<script>
+  var allMessages = [];
+  var currentType = "all";
+
+  function typeLabel(type) {
+    if (type === "teacher") return '<span class="a-pill a-pill-teacher">Öğretmen</span>';
+    if (type === "student") return '<span class="a-pill a-pill-student">Öğrenci</span>';
+    return '<span class="a-pill a-pill-student">Site</span>';
+  }
+
+  function render() {
+    var box = document.getElementById("messagesListBox");
+    var filtered = currentType === "all" ? allMessages : allMessages.filter(function (m) { return m.type === currentType; });
+    if (filtered.length === 0) { box.innerHTML = '<div class="a-empty">Mesaj yok.</div>'; return; }
+    box.innerHTML = filtered.map(function (m) {
+      return '<div class="a-msg-bubble" data-open="' + m.id + '" style="cursor:pointer;' + (m.read ? '' : ' border-left:3px solid var(--a-danger);') + '">' +
+        '<div class="meta">' + typeLabel(m.type) + ' &middot; <b style="color:var(--a-text);">' + adminEscape(m.name) + '</b> (' + adminEscape(m.email) + ') &middot; ' + adminTimeAgo(m.createdAt) + (m.read ? '' : ' &middot; <span style="color:var(--a-danger);">yeni</span>') + '</div>' +
+        '<div><b>' + adminEscape(m.subject) + '</b></div>' +
+        '<div style="margin-top:5px; color:var(--a-text-dim);">' + adminEscape(m.message.slice(0, 140)) + (m.message.length > 140 ? "..." : "") + '</div>' +
+        (m.adminReply ? '<div class="a-msg-reply">Cevabınız: ' + adminEscape(m.adminReply.slice(0, 100)) + (m.adminReply.length > 100 ? "..." : "") + '</div>' : '') +
+      '</div>';
+    }).join("");
+    box.querySelectorAll("[data-open]").forEach(function (el) {
+      el.addEventListener("click", function () { openMessage(filtered.find(function (x) { return x.id === el.getAttribute("data-open"); })); });
+    });
+  }
+
+  async function loadMessages() {
+    document.getElementById("adminPageTitle").textContent = "Mesajlar";
+    var box = document.getElementById("messagesListBox");
+    box.innerHTML = '<div class="a-empty">Yükleniyor...</div>';
+    try {
+      var data = await adminFetch("/admin/messages");
+      allMessages = data.messages;
+      render();
+    } catch (err) { box.innerHTML = '<div class="a-empty">Hata: ' + err.message + '</div>'; }
+  }
+
+  async function openMessage(m) {
+    document.getElementById("msgModalBody").innerHTML =
+      '<h3>' + adminEscape(m.subject) + '</h3>' +
+      '<p style="font-size:12px; color:var(--a-text-dim); margin-bottom:14px;">' + typeLabel(m.type) + ' &middot; ' + adminEscape(m.name) + ' &middot; ' + adminEscape(m.email) + (m.phone ? ' &middot; ' + adminEscape(m.phone) : '') + '</p>' +
+      '<div class="a-msg-bubble">' + adminEscape(m.message) + '</div>' +
+      (m.adminReply ? '<div class="a-msg-reply"><b>Cevabınız:</b><br>' + adminEscape(m.adminReply) + '</div>' : '') +
+      '<div class="a-form-group" style="margin-top:16px;"><label>' + (m.adminReply ? "Cevabı güncelle" : "Cevap yaz") + '</label><textarea id="replyText" rows="4">' + (m.adminReply ? adminEscape(m.adminReply) : "") + '</textarea></div>' +
+      '<button class="a-btn a-btn-primary a-btn-block" id="sendReplyBtn">Cevabı Kaydet</button>' +
+      '<button class="a-btn a-btn-danger a-btn-block" id="deleteMsgBtn" style="margin-top:8px;">Mesajı Sil</button>';
+
+    document.getElementById("sendReplyBtn").addEventListener("click", async function () {
+      try {
+        await adminFetch("/admin/messages/" + m.id + "/reply", { method: "POST", body: { reply: document.getElementById("replyText").value.trim() } });
+        adminToast("Cevap kaydedildi.");
+        document.getElementById("msgModal").classList.remove("open");
+        loadMessages();
+      } catch (err) { adminToast(err.message, true); }
+    });
+    document.getElementById("deleteMsgBtn").addEventListener("click", async function () {
+      if (!confirm("Bu mesajı silmek istediğinize emin misiniz?")) return;
+      try {
+        await adminFetch("/admin/messages/" + m.id, { method: "DELETE" });
+        adminToast("Mesaj silindi.");
+        document.getElementById("msgModal").classList.remove("open");
+        loadMessages();
+      } catch (err) { adminToast(err.message, true); }
+    });
+    if (!m.read) adminFetch("/admin/messages/" + m.id + "/read", { method: "PUT" }).catch(function () {});
+    document.getElementById("msgModal").classList.add("open");
+  }
+
+  document.getElementById("msgModalClose").addEventListener("click", function () { document.getElementById("msgModal").classList.remove("open"); });
+  document.getElementById("typeTabs").addEventListener("click", function (e) {
+    var tab = e.target.closest(".a-tab"); if (!tab) return;
+    document.querySelectorAll("#typeTabs .a-tab").forEach(function (t) { t.classList.remove("active"); });
+    tab.classList.add("active"); currentType = tab.getAttribute("data-type"); render();
+  });
+
+  initAdminShell("messages").then(function (user) { if (user) loadMessages(); });
+</script>
+</body>
+</html>

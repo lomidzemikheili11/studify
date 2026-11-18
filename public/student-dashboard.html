@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Studify — Panelim</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<link rel="stylesheet" href="css/style.css">
+<script>(function(){try{var t=localStorage.getItem("studifyTheme");if(t!=="light")document.documentElement.setAttribute("data-theme","dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}})();</script>
+<style>
+  .dash-wrap { max-width: 760px; margin: 0 auto; padding: 36px 24px 70px; }
+  .dash-tabs { display: flex; gap: 6px; margin-bottom: 24px; border-bottom: 1px solid var(--gray-200); }
+  .dash-tab { padding: 11px 16px; font-weight: 700; font-size: 13.5px; color: var(--gray-500); cursor: pointer; border-bottom: 2px solid transparent; }
+  .dash-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+  .dash-panel { display: none; }
+  .dash-panel.active { display: block; }
+  .fav-card { display: flex; align-items: center; gap: 14px; border: 1px solid var(--gray-200); border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .fav-card img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: var(--blue-pale); }
+</style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo"><img src="images/logo.png" alt="Studify"><b>Studify</b></a>
+      <nav class="main-nav">
+        <a href="index.html" data-i18n="nav_home">Ana Sayfa</a>
+        <a href="teachers.html" data-i18n="nav_teachers">Öğretmenler</a>
+      </nav>
+      <div class="header-right">
+        <button class="theme-toggle-btn" id="themeToggleBtn" aria-label="Tema değiştir" title="Tema değiştir"></button>
+        <div class="lang-switcher" data-id="1"></div>
+        <div id="authArea"></div>
+        <button class="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+    <nav class="mobile-nav"><div id="authAreaMobile"></div></nav>
+  </header>
+
+  <div class="dash-wrap">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+      <h2 style="color:var(--navy); margin:0;">Öğrenci Paneli</h2>
+      <a href="messages.html" class="btn btn-outline">💬 Öğretmenlerim</a>
+    </div>
+    <p style="color:var(--gray-500); font-size:13.5px; margin-bottom:22px;">Favori öğretmenlerinizi ve mesajlarınızı buradan yönetin.</p>
+
+    <div class="dash-tabs">
+      <div class="dash-tab active" data-tab="favorites">Favorilerim</div>
+      <div class="dash-tab" data-tab="lessons">Derslerim</div>
+      <div class="dash-tab" data-tab="messages">Admin ile Mesajlaşma</div>
+    </div>
+
+    <div class="dash-panel active" id="panel-favorites">
+      <div id="favoritesList"><p style="color:var(--gray-500); font-size:13.5px;">Yükleniyor...</p></div>
+    </div>
+
+    <div class="dash-panel" id="panel-lessons">
+      <div id="lessonsList"><p style="color:var(--gray-500); font-size:13.5px;">Yükleniyor...</p></div>
+    </div>
+
+    <div class="dash-panel" id="panel-messages">
+      <div id="msgThread" style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;"></div>
+      <div class="form-group"><label>Admin'e yeni mesaj</label><textarea id="newMsgText" rows="3" placeholder="Sorunuzu veya probleminizi yazın..."></textarea></div>
+      <p class="error-box" id="msgError"></p>
+      <button id="sendMsgBtn" class="btn btn-primary">Gönder</button>
+    </div>
+
+    <div style="border-top:1px solid var(--gray-200); margin-top:32px; padding-top:22px;">
+      <h4 style="color:var(--red); font-size:13.5px; margin:0 0 8px;">Tehlikeli Bölge</h4>
+      <p style="font-size:12.5px; color:var(--gray-500); margin-bottom:12px;">Hesabınızı silmek kalıcıdır ve geri alınamaz.</p>
+      <button class="btn btn-outline" style="color:var(--red); border-color:var(--red); font-size:12.5px; padding:9px 16px;" id="deleteAccountBtn">Hesabımı Sil</button>
+    </div>
+  </div>
+
+  <footer class="site-footer"><div class="container"><div class="footer-bottom" style="border-top:none; padding-top:0;"><span>🇹🇷</span> © 2026 Studify.</div></div></footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/api.js"></script>
+<script src="js/script.js"></script>
+<script src="js/student-dashboard.js"></script>
+</body>
+</html>

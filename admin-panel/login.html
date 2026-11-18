@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Giriş — Studify</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="admin-login-wrap">
+    <div class="admin-login-card">
+      <div class="admin-login-logo">
+        <img src="/images/logo.png" onerror="this.style.display='none'" alt="">
+        <div><b>STUDIFY</b><span>Admin Panel</span></div>
+      </div>
+
+      <div id="step1">
+        <h2>Admin Girişi</h2>
+        <p class="sub">Bu alan yalnızca site yöneticileri içindir.</p>
+        <form id="adminLoginForm">
+          <div class="a-form-group"><label>E-posta</label><input type="email" id="aEmail" required autocomplete="username"></div>
+          <div class="a-form-group"><label>Şifre</label><input type="password" id="aPassword" required autocomplete="current-password"></div>
+          <p class="a-error" id="aLoginError"></p>
+          <button type="submit" class="a-btn a-btn-primary a-btn-block">Giriş Yap</button>
+        </form>
+      </div>
+
+      <div id="step2" style="display:none;">
+        <h2>Doğrulama Kodu</h2>
+        <p class="sub">Kimlik doğrulama uygulamanızdaki 6 haneli kodu girin.</p>
+        <form id="twoFaForm">
+          <div class="a-form-group"><label>Kod</label><input type="text" id="aCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" required></div>
+          <p class="a-error" id="a2faError"></p>
+          <button type="submit" class="a-btn a-btn-primary a-btn-block">Doğrula</button>
+          <button type="button" class="a-btn a-btn-outline a-btn-block" id="backToLoginBtn" style="margin-top:10px;">Geri</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script src="admin-api.js"></script>
+<script>
+  var pendingToken = null;
+
+  document.getElementById("adminLoginForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var errorBox = document.getElementById("aLoginError");
+    errorBox.style.display = "none";
+    var btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true;
+    try {
+      var res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: document.getElementById("aEmail").value.trim(), password: document.getElementById("aPassword").value })
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Giriş başarısız oldu.");
+
+      if (data.requires2FA) {
+        pendingToken = data.pendingToken;
+        document.getElementById("step1").style.display = "none";
+        document.getElementById("step2").style.display = "block";
+        document.getElementById("aCode").focus();
+        btn.disabled = false;
+        return;
+      }
+
+      if (data.user.role !== "admin") throw new Error("Bu hesap admin değil.");
+      adminSetToken(data.token);
+      window.location.href = data.user.twoFactorEnabled ? "index.html" : "setup-2fa.html";
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = "block";
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("twoFaForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+    var errorBox = document.getElementById("a2faError");
+    errorBox.style.display = "none";
+    var btn = e.target.querySelector("button[type=submit]");
+    btn.disabled = true;
+    try {
+      var res = await fetch("/api/auth/verify-2fa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pendingToken: pendingToken, code: document.getElementById("aCode").value.trim() })
+      });
+      var data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Doğrulama başarısız oldu.");
+      adminSetToken(data.token);
+      window.location.href = "index.html";
+    } catch (err) {
+      errorBox.textContent = err.message;
+      errorBox.style.display = "block";
+      btn.disabled = false;
+    }
+  });
+
+  document.getElementById("backToLoginBtn").addEventListener("click", function () {
+    document.getElementById("step2").style.display = "none";
+    document.getElementById("step1").style.display = "block";
+    document.getElementById("aPassword").value = "";
+  });
+
+  (async function () {
+    var token = adminGetToken();
+    if (!token) return;
+    try {
+      var res = await fetch("/api/auth/me", { headers: { Authorization: "Bearer " + token } });
+      if (res.ok) {
+        var data = await res.json();
+        if (data.user.role === "admin") window.location.href = data.user.twoFactorEnabled ? "index.html" : "setup-2fa.html";
+      }
+    } catch (e) {}
+  })();
+</script>
+</body>
+</html>

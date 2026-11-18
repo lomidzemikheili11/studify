@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — Admin Panel</title>
+<link rel="icon" type="image/png" href="/images/logo.png">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="adminShell"></div>
+<div id="adminPageContent" style="display:none;">
+  <div class="a-panel">
+    <div class="a-panel-head"><h3>Makaleler</h3><button class="a-btn a-btn-primary a-btn-sm" id="newArticleBtn">+ Yeni Makale</button></div>
+    <div id="articlesBox" style="padding:16px 20px;"></div>
+  </div>
+</div>
+
+<div class="a-modal-overlay" id="articleModal">
+  <div class="a-modal" style="max-width:640px;">
+    <span class="a-modal-close" id="articleModalClose">✕</span>
+    <h3 id="articleModalTitle">Yeni Makale</h3>
+    <input type="hidden" id="articleId">
+    <div class="a-form-group"><label>Kapak Emoji</label><input type="text" id="articleEmoji" value="📘" maxlength="4" style="width:80px;"></div>
+    <div class="a-form-group"><label>Başlık</label><input type="text" id="articleTitle"></div>
+    <div class="a-form-group"><label>Özet (liste görünümünde gösterilir)</label><textarea id="articleSummary" rows="2"></textarea></div>
+    <div class="a-form-group"><label>İçerik</label><textarea id="articleContent" rows="10"></textarea></div>
+    <div class="a-form-group">
+      <label>Durum</label>
+      <select id="articleStatus"><option value="published">Yayınlandı</option><option value="draft">Taslak</option></select>
+    </div>
+    <p class="a-error" id="articleError"></p>
+    <button class="a-btn a-btn-primary a-btn-block" id="articleSaveBtn">Kaydet</button>
+  </div>
+</div>
+
+<script src="admin-api.js"></script>
+<script>
+  var allArticles = [];
+
+  function statusPill(s) {
+    return s === "published" ? '<span class="a-pill a-pill-approved">Yayınlandı</span>' : '<span class="a-pill a-pill-pending">Taslak</span>';
+  }
+
+  async function loadArticles() {
+    document.getElementById("adminPageTitle").textContent = "Blog";
+    var box = document.getElementById("articlesBox");
+    try {
+      var data = await adminFetch("/articles/admin/all");
+      allArticles = data.articles;
+      if (allArticles.length === 0) { box.innerHTML = '<div class="a-empty">Henüz makale yok.</div>'; return; }
+      box.innerHTML = '<table class="a-table"><thead><tr><th></th><th>Başlık</th><th>Durum</th><th>Tarih</th><th></th></tr></thead><tbody>' +
+        allArticles.map(function (a) {
+          return '<tr><td style="font-size:20px;">' + a.coverEmoji + '</td><td>' + adminEscape(a.title) + '</td><td>' + statusPill(a.status) + '</td><td>' + new Date(a.createdAt).toLocaleDateString("tr-TR") + '</td>' +
+            '<td><div class="a-actions"><button class="a-btn a-btn-outline a-btn-sm" data-edit="' + a.id + '">Düzenle</button><button class="a-btn a-btn-danger a-btn-sm" data-delete="' + a.id + '">Sil</button></div></td></tr>';
+        }).join("") + '</tbody></table>';
+
+      box.querySelectorAll("[data-edit]").forEach(function (btn) {
+        btn.addEventListener("click", function () { openModal(allArticles.find(function (x) { return x.id === btn.getAttribute("data-edit"); })); });
+      });
+      box.querySelectorAll("[data-delete]").forEach(function (btn) {
+        btn.addEventListener("click", async function () {
+          if (!confirm("Bu makaleyi silmek istediğinize emin misiniz?")) return;
+          try { await adminFetch("/articles/admin/" + btn.getAttribute("data-delete"), { method: "DELETE" }); adminToast("Makale silindi."); loadArticles(); }
+          catch (err) { adminToast(err.message, true); }
+        });
+      });
+    } catch (err) { box.innerHTML = '<div class="a-empty">Hata: ' + err.message + '</div>'; }
+  }
+
+  function openModal(article) {
+    document.getElementById("articleError").style.display = "none";
+    document.getElementById("articleModalTitle").textContent = article ? "Makaleyi Düzenle" : "Yeni Makale";
+    document.getElementById("articleId").value = article ? article.id : "";
+    document.getElementById("articleEmoji").value = article ? article.coverEmoji : "📘";
+    document.getElementById("articleTitle").value = article ? article.title : "";
+    document.getElementById("articleSummary").value = article ? article.summary : "";
+    document.getElementById("articleContent").value = article ? article.content : "";
+    document.getElementById("articleStatus").value = article ? article.status : "published";
+    document.getElementById("articleModal").classList.add("open");
+  }
+
+  document.getElementById("newArticleBtn").addEventListener("click", function () { openModal(null); });
+  document.getElementById("articleModalClose").addEventListener("click", function () { document.getElementById("articleModal").classList.remove("open"); });
+
+  document.getElementById("articleSaveBtn").addEventListener("click", async function () {
+    var errorBox = document.getElementById("articleError");
+    errorBox.style.display = "none";
+    var id = document.getElementById("articleId").value;
+    var payload = {
+      coverEmoji: document.getElementById("articleEmoji").value.trim() || "📘",
+      title: document.getElementById("articleTitle").value.trim(),
+      summary: document.getElementById("articleSummary").value.trim(),
+      content: document.getElementById("articleContent").value.trim(),
+      status: document.getElementById("articleStatus").value
+    };
+    if (!payload.title || !payload.content) { errorBox.textContent = "Başlık ve içerik zorunludur."; errorBox.style.display = "block"; return; }
+    try {
+      if (id) await adminFetch("/articles/admin/" + id, { method: "PUT", body: payload });
+      else await adminFetch("/articles/admin/create", { method: "POST", body: payload });
+      document.getElementById("articleModal").classList.remove("open");
+      adminToast("Kaydedildi.");
+      loadArticles();
+    } catch (err) { errorBox.textContent = err.message; errorBox.style.display = "block"; }
+  });
+
+  initAdminShell("blog").then(function (user) { if (user) loadArticles(); });
+</script>
+</body>
+</html>
